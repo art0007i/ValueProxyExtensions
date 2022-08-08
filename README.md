@@ -10,7 +10,7 @@ All features can be individually disabled using the config system.
 - Value Proxies can be transferred between world and userspace by using the click in feature
 
 Known Issue:
-If you are using the [LogixUtils](https://github.com/badhaloninja/LogixUtils) mod setting the logix tip to `extract: reference node` will prevent you from creating value inputs from value proxies.
+If you are using the [LogixUtils](https://github.com/badhaloninja/LogixUtils) mod, setting the logix tip to `extract: reference node` will prevent you from creating value inputs from value proxies.
 
 ## Installation
 1. Install [NeosModLoader](https://github.com/zkxs/NeosModLoader).
