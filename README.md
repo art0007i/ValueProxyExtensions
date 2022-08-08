@@ -9,6 +9,9 @@ All features can be individually disabled using the config system.
 - Inspector panels will generate buttons that allow grabbing and dropping types such as float3, floatQ, enums etc.
 - Value Proxies can be transferred between world and userspace by using the click in feature
 
+Known Issue:
+If you are using the [LogixUtils](https://github.com/badhaloninja/LogixUtils) mod setting the logix tip to `extract: reference node` will prevent you from creating value inputs from value proxies.
+
 ## Installation
 1. Install [NeosModLoader](https://github.com/zkxs/NeosModLoader).
 1. Place [ValueProxyExtensions.dll](https://github.com/art0007i/ValueProxyExtensions/releases/latest/download/ValueProxyExtensions.dll) into your `nml_mods` folder. This folder should be at `C:\Program Files (x86)\Steam\steamapps\common\NeosVR\nml_mods` for a default install. You can create it if it's missing, or if you launch the game once with NeosModLoader installed it will create the folder for you.
