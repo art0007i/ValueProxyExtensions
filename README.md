@@ -3,7 +3,6 @@
 A [NeosModLoader](https://github.com/zkxs/NeosModLoader) mod for [Neos VR](https://neos.com/) that adds a few extra features to reference and value proxies.<br>
 All features can be individually disabled using the config system.
 - Reference Proxies now display the type they are storing, and also act as a value proxy with the full type name (useful for dropping into the component attacher generic type selector)
-- Value Proxies now have a TypeField that determines the type of the value
 - Value Proxies can be clicked into a field similar to reference proxies
 - Pressing secondary with a logix tip while holding a value proxy will create an input with that value
 - LogiX displays allow grabbing their contained value with an extra generated button
