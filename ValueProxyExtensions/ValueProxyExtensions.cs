@@ -17,13 +17,13 @@ namespace ValueProxyExtensions
     {
         public override string Name => "ValueProxyExtensions";
         public override string Author => "art0007i";
-        public override string Version => "1.0.0";
+        public override string Version => "1.1.0";
         public override string Link => "https://github.com/art0007i/ValueProxyExtensions/";
 
         [AutoRegisterConfigKey]
         public static ModConfigurationKey<bool> KEY_REF_VISUAL = new("reference_proxy_visuals", "Determines whether text containing ref type should be generated on reference proxies.", () => true);
         [AutoRegisterConfigKey]
-        public static ModConfigurationKey<bool> KEY_PROXY_TRANSFER = new("proxy_transfer", "Determines wether value proxies should be allowed to be transported to userspace and back.", () => true);
+        public static ModConfigurationKey<bool> KEY_PROXY_TRANSFER = new("proxy_transfer", "Determines whether value proxies should be allowed to be transported to userspace and back.", () => true);
         [AutoRegisterConfigKey]
         public static ModConfigurationKey<bool> KEY_CREATE_INPUTS = new("create_inputs", "Determines whether pressing secondary with a value proxy in hand will create a logix input with that value.", () => true);
         [AutoRegisterConfigKey]
@@ -186,7 +186,8 @@ namespace ValueProxyExtensions
                     type == typeof(decimal) ||
                     type == typeof(color) ||
                     type == typeof(colorX) ||
-                    type == typeof(BoundingBox) ||
+                    type == typeof(BoundingBox) || 
+                    type == typeof(Rect) || // This one could be parseable but im too lazy to add it lol
                     type.IsNullable()
                 )
                 {
@@ -287,13 +288,15 @@ namespace ValueProxyExtensions
 
                 var root = source.ActiveUserRoot;
                 Grabber grabber = root.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value != BodyNode.NONE && source.IsChildOf(gr.Slot.Parent.Parent));
+                if (grabber == null) return true;
                 Chirality side = grabber.CorrespondingBodyNode.Value.GetChirality();
                 World other = source.World.IsUserspace() ? source.Engine.WorldManager.FocusedWorld : Userspace.UserspaceWorld;
-                root = other.LocalUser.Root;
+                var otherRoot = other.LocalUser.Root;
                 if (side >= 0)
                 {
-                    var newGrabber = root.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value.GetChirality() == side);
+                    var newGrabber = otherRoot.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value.GetChirality() == side);
                     if (newGrabber.GetValueProxy<string>() != null || newGrabber.GetReferenceProxy() != null) grabber = newGrabber;
+                    else if(grabber.GetValueProxy<string>() == null && grabber.GetReferenceProxy() == null) grabber = root.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value.GetChirality() == side.GetOther());
                 }
                 if (grabber != null)
                 {
