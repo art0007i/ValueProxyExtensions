@@ -3,7 +3,6 @@ using NeosModLoader;
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using FrooxEngine;
 using FrooxEngine.LogiX;
@@ -16,12 +15,14 @@ namespace ValueProxyExtensions
     public class ValueProxyExtensions : NeosMod
     {
         public override string Name => "ValueProxyExtensions";
-        public override string Author => "art0007i";
-        public override string Version => "1.1.0";
+        public override string Author => "art0007i & Nytra";
+        public override string Version => "1.1.1";
         public override string Link => "https://github.com/art0007i/ValueProxyExtensions/";
 
         [AutoRegisterConfigKey]
         public static ModConfigurationKey<bool> KEY_REF_VISUAL = new("reference_proxy_visuals", "Determines whether text containing ref type should be generated on reference proxies.", () => true);
+        [AutoRegisterConfigKey]
+        public static ModConfigurationKey<bool> KEY_REF_VALUE_PROXY = new("reference_proxy_value_proxy", "Determines whether reference proxies should act as value proxies with the full type name.", () => true);
         [AutoRegisterConfigKey]
         public static ModConfigurationKey<bool> KEY_PROXY_TRANSFER = new("proxy_transfer", "Determines whether value proxies should be allowed to be transported to userspace and back.", () => true);
         [AutoRegisterConfigKey]
@@ -153,7 +154,15 @@ namespace ValueProxyExtensions
                 if (!__instance.HasVisual) return;
                 if (displayTexts[__instance.GetType()].Count <= 1) return;
 
-                var txt = __instance.Slot[0]?[0]?[0]?.Find("Horizontal Layout")?[1]?.GetComponent<Text>()?.Content;
+                Sync<string> txt = null;
+                try
+                {
+                    txt = __instance.Slot[0]?[0]?[0]?.Find("Horizontal Layout")?[1]?.GetComponent<Text>()?.Content;
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    return;
+                }
                 if (txt == null) return;
                 User allocUser = null;
                 ulong num;
@@ -410,16 +419,23 @@ namespace ValueProxyExtensions
         {
             public static void Postfix(IGrabbable __result, IWorldElement target)
             {
-                if (!config.GetValue(KEY_REF_VISUAL)) return;
-                __result.Slot.AttachComponent<ValueProxy<string>>().Value.Value = target.GetType().FullName;
+                if (config.GetValue(KEY_REF_VISUAL))
+                {
+                    var txtSlot = __result.Slot[0].AddSlot("Label");
+                    txtSlot.LocalPosition = new float3(0, -0.025f, 0);
+                    var newTx = txtSlot.AttachComponent<TextRenderer>();
+                    newTx.Size.Value = 0.12f;
+                    newTx.Color.Value = color.Cyan;
+                    newTx.Material.Target = __result.Slot[0].GetComponent<TextUnlitMaterial>();
+                    newTx.Text.Value = target.GetType().GetNiceName();
+                }
+                
+                if (config.GetValue(KEY_REF_VALUE_PROXY))
+                {
+                    __result.Slot.AttachComponent<ValueProxy<string>>().Value.Value = target.GetType().FullName;
+                }
+
                 __result.Slot.AttachComponent<TypeField>().Type.Value = typeof(Type);
-                var txtSlot = __result.Slot[0].AddSlot("Label");
-                txtSlot.LocalPosition = new float3(0, -0.025f, 0);
-                var newTx = txtSlot.AttachComponent<TextRenderer>();
-                newTx.Size.Value = 0.12f;
-                newTx.Color.Value = color.Cyan;
-                newTx.Material.Target = __result.Slot[0].GetComponent<TextUnlitMaterial>();
-                newTx.Text.Value = target.GetType().GetNiceName();
             }
         }
     }
