@@ -15,7 +15,7 @@ namespace ValueProxyExtensions
     public class ValueProxyExtensions : NeosMod
     {
         public override string Name => "ValueProxyExtensions";
-        public override string Author => "art0007i & Nytra";
+        public override string Author => "art0007i";
         public override string Version => "1.1.1";
         public override string Link => "https://github.com/art0007i/ValueProxyExtensions/";
 
@@ -159,7 +159,7 @@ namespace ValueProxyExtensions
                 {
                     txt = __instance.Slot[0]?[0]?[0]?.Find("Horizontal Layout")?[1]?.GetComponent<Text>()?.Content;
                 }
-                catch (ArgumentOutOfRangeException ex)
+                catch
                 {
                     return;
                 }
@@ -177,7 +177,7 @@ namespace ValueProxyExtensions
                 if (allocUser != __instance.LocalUser) return;
 
                 var funnyStrs = displayTexts[__instance.GetType()].ConvertAll((fi) => (fi.GetValue(__instance) as FieldDrive<string>).Target?.Value.Substring(3));
-                txt.Value = "[" + funnyStrs.Join((s) => s, "; ") + "]";
+                txt.Value = "[" + string.Join("; ", funnyStrs) + "]";
             }
         }
         [HarmonyPatch(typeof(SyncMemberEditorBuilder))]
@@ -433,9 +433,8 @@ namespace ValueProxyExtensions
                 if (config.GetValue(KEY_REF_VALUE_PROXY))
                 {
                     __result.Slot.AttachComponent<ValueProxy<string>>().Value.Value = target.GetType().FullName;
+                    //__result.Slot.AttachComponent<TypeField>().Type.Value = typeof(Type);
                 }
-
-                __result.Slot.AttachComponent<TypeField>().Type.Value = typeof(Type);
             }
         }
     }
