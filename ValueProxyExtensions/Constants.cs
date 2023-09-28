@@ -1,4 +1,4 @@
-﻿using FrooxEngine.LogiX.Display;
+﻿using FrooxEngine.ProtoFlux.CoreNodes;
 using System;
 
 namespace ValueProxyExtensions
@@ -23,6 +23,8 @@ namespace ValueProxyExtensions
             }
             UniLog.Log(sb.ToString());
          */
+        /*
+        
         public static readonly Type[] displays = {
             //typeof(Display_Dummy), Does not actually generate a unique visual
             typeof(Display_Object),
@@ -68,7 +70,7 @@ namespace ValueProxyExtensions
             typeof(Display_TimeSpan),
             typeof(Display_Color),
             typeof(Display_ColorX)
-        };
+        };*/
         public readonly static Uri grabIcon = new Uri("neosdb:///702b51521a39f6a0e5d5d36b2675638e90d395695134678e04151c9a78cbfd6f");
     }
 }

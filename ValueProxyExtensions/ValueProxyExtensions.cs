@@ -1,22 +1,22 @@
 using HarmonyLib;
-using NeosModLoader;
+using ResoniteModLoader;
 using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using FrooxEngine;
-using FrooxEngine.LogiX;
+using FrooxEngine.ProtoFlux;
 using FrooxEngine.UIX;
-using BaseX;
-using FrooxEngine.LogiX.Input;
+using Elements.Core;
+using FrooxEngine.ProtoFlux.Runtimes.Execution.Nodes;
 
 namespace ValueProxyExtensions
 {
-    public class ValueProxyExtensions : NeosMod
+    public class ValueProxyExtensions : ResoniteMod
     {
         public override string Name => "ValueProxyExtensions";
         public override string Author => "art0007i";
-        public override string Version => "1.1.1";
+        public override string Version => "2.0.0";
         public override string Link => "https://github.com/art0007i/ValueProxyExtensions/";
 
         [AutoRegisterConfigKey]
@@ -46,7 +46,7 @@ namespace ValueProxyExtensions
             Harmony harmony = new Harmony("me.art0007i.ValueProxyExtensions");
             harmony.PatchAll();
 
-            foreach (var display in Constants.displays)
+            /*foreach (var display in Constants.displays)
             {
                 var visual = AccessTools.Method(display, "OnGenerateVisual");
                 var changes = AccessTools.Method(display, "OnChanges");
@@ -69,18 +69,19 @@ namespace ValueProxyExtensions
                     harmony.Patch(visual, postfix: new HarmonyMethod(AccessTools.Method(typeof(DisplayPatch), "Postfix")));
                     harmony.Patch(changes, postfix: new HarmonyMethod(AccessTools.Method(typeof(DisplayPatch), "ChangesPostfix")));
                 }
-            }
+            }*/
         }
 
+        
         class DisplayPatch
-        {
-            public static void Postfix(Slot root, LogixNode __instance)
+        {/*
+            public static void Postfix(Slot root, ProtoFluxNode __instance)
             {
                 if (!config.GetValue(KEY_LOGIX_DISPLAYS)) return;
                 Slot bt = null;
                 var ley = root[0][0].Find("Vertical Layout");
                 MultiValueTextFormatDriver formatter = null;
-                if (__instance is FrooxEngine.LogiX.Display.Display_Color)
+                if (__instance is FrooxEngine.ProtoFlux.Display.Display_Color)
                 {
                     bt = ley[0].Find("Image");
                     var cd = (AccessTools.Field(__instance.GetType(), "_color").GetValue(__instance) as FieldDrive<color>);
@@ -121,7 +122,7 @@ namespace ValueProxyExtensions
                         // it would be so awesome if this worked...
                         // Problem is vector types such as float2 will create an output like [X: 1; Y: 2]
                         //                                        but the required format is [1; 2]
-                        /*
+                        
                         var fmt = "";
                         var i = 0;
                         foundDrives.Do((field) => fmt += $"{{{i++}}}; ");
@@ -129,13 +130,13 @@ namespace ValueProxyExtensions
                         fmt = fmt.Remove(fmt.Length - 2);
                         if (txtCount > 1)
                             fmt = "[" + fmt + "]";
-                        */
                         formatter = bt.AttachComponent<MultiValueTextFormatDriver>();
                         formatter.Format.Value = "{0}";
                         formatter.Sources.AddRange(foundDrives);
                     }
                 }
-
+                        
+                        
                 var text = bt.AttachComponent<Text>();
                 var textField = bt.AttachComponent<TextField>();
                 bt.AttachComponent<TypeField>().Type.Value = AccessTools.Field(__instance.GetType(), "Source").FieldType.GetGenericArguments()[0];
@@ -148,16 +149,15 @@ namespace ValueProxyExtensions
                 textField.Enabled = false;
                 text.Enabled = false;
             }
-
-            public static void ChangesPostfix(LogixNode __instance)
+            public static void ChangesPostfix(ProtoFluxNode __instance)
             {
-                if (!__instance.HasVisual) return;
+                if (!__instance.HasActiveVisual()) return;
                 if (displayTexts[__instance.GetType()].Count <= 1) return;
 
                 Sync<string> txt = null;
                 try
                 {
-                    txt = __instance.Slot[0]?[0]?[0]?.Find("Horizontal Layout")?[1]?.GetComponent<Text>()?.Content;
+                    txt = __instance.Slot[0]?[0]?[0]?.FindChild("Horizontal Layout")?[1]?.GetComponent<Text>()?.Content;
                 }
                 catch
                 {
@@ -179,6 +179,7 @@ namespace ValueProxyExtensions
                 var funnyStrs = displayTexts[__instance.GetType()].ConvertAll((fi) => (fi.GetValue(__instance) as FieldDrive<string>).Target?.Value.Substring(3));
                 txt.Value = "[" + string.Join("; ", funnyStrs) + "]";
             }
+            */
         }
         [HarmonyPatch(typeof(SyncMemberEditorBuilder))]
         class InspectorFieldPatch
@@ -213,7 +214,7 @@ namespace ValueProxyExtensions
             {
                 ui.PushStyle();
                 ui.Style.MinWidth = 24;
-                ui.Style.ButtonColor = new color(0.7f, 0.7f, 1);
+                ui.Style.ButtonColor = new colorX(0.7f, 0.7f, 1);
                 var bt = ui.Button(Constants.grabIcon);
                 bt.ColorDrivers.Do((cd)=> cd.PressColor.Value = cd.HighlightColor.Value);
                 var text = bt.Slot.AttachComponent<Text>();
@@ -254,7 +255,7 @@ namespace ValueProxyExtensions
                     if (__instance.Editor?.Target.EditingFinished.Target != null)
                     {
                         var targetEl = (AccessTools.Method(typeof(ISyncRef), "get_Target").Invoke(__instance.Editor.Target.EditingFinished, null) as IWorldElement);
-                        if (typeof(LogixNode).IsAssignableFrom(targetEl.GetType()))
+                        if (typeof(ProtoFluxNode).IsAssignableFrom(targetEl.GetType()))
                         {
                             var myfield = __result.Slot.AttachComponent<TypeField>();
                             // types such as int4, will generate the type int4 when you pull only one number, difficult to fix
@@ -316,14 +317,15 @@ namespace ValueProxyExtensions
                 return true;
             }
         }
-        [HarmonyPatch(typeof(LogixTip), "OnSecondaryPress")]
+        /*
+        [HarmonyPatch(typeof(ProtoFluxTool), "OnSecondaryPress")]
         class LogixTipPatch
         {
-            public static bool Prefix(LogixTip __instance)
+            public static bool Prefix(ProtoFluxTool __instance)
             {
                 if (!config.GetValue(KEY_CREATE_INPUTS)) return true;
 
-                var grabber = __instance.ActiveTool.Grabber;
+                var grabber = __instance.ActiveHandler.Grabber;
                 var prox = grabber.GetValueProxy<string>();
                 if (prox != null && grabber.GetReferenceProxy() == null)
                 {
@@ -331,16 +333,21 @@ namespace ValueProxyExtensions
                     Type type = typeField?.Type.Value ?? typeof(string);
                     if (type != null)
                     {
-                        Type defaultInput = DefaultNodes.GetDefaultInput(type);
+                        Type defaultInput = null;
+                        try
+                        {
+                            defaultInput = typeof(ValueInput<>).MakeGenericType(type);
+                        }
+
                         if (defaultInput == null)
                         {
-                            defaultInput = typeof(StringInput);
+                            defaultInput = typeof(ValueInput<string>);
                             type = typeof(string);
                         }
-                        var node = ((LogixNode)((Slot)AccessTools.Method(typeof(LogixTip), "CreateNewNodeSlot").Invoke(__instance, new object[] { LogixHelper.GetNodeName(defaultInput) })).AttachComponent(defaultInput));
-                        if (node is TypeInput)
+                        var node = ((ProtoFluxNode)((Slot)AccessTools.Method(typeof(ProtoFluxTool), "CreateNewNodeSlot").Invoke(__instance, new object[] { (defaultInput).GetNiceName() })).AttachComponent(defaultInput));
+                        if (node is TypeObjectInput)
                         {
-                            var t = (AccessTools.Field(typeof(TypeInput), "_value").GetValue(node) as SyncType);
+                            var t = (AccessTools.Field(typeof(TypeObjectInput), "_value").GetValue(node) as SyncType);
                             t.Value = TypeHelper.FindType(prox.Value.Value);
                             node.GenerateVisual();
                             return false;
@@ -384,6 +391,7 @@ namespace ValueProxyExtensions
                 return true;
             }
         }
+        */
         [HarmonyPatch(typeof(PrimitiveTryParsers), "GetParser", new Type[] { typeof(Type) })]
         class ParserExtensions
         {
@@ -421,13 +429,8 @@ namespace ValueProxyExtensions
             {
                 if (config.GetValue(KEY_REF_VISUAL))
                 {
-                    var txtSlot = __result.Slot[0].AddSlot("Label");
-                    txtSlot.LocalPosition = new float3(0, -0.025f, 0);
-                    var newTx = txtSlot.AttachComponent<TextRenderer>();
-                    newTx.Size.Value = 0.12f;
-                    newTx.Color.Value = color.Cyan;
-                    newTx.Material.Target = __result.Slot[0].GetComponent<TextUnlitMaterial>();
-                    newTx.Text.Value = target.GetType().GetNiceName();
+                    __result.Slot.GetComponentInChildren<Canvas>().Size.Value = new(0, 32);
+                    __result.Slot.GetComponentInChildren<Text>().Content.Value += "\n" + target.GetType().GetNiceName();
                 }
                 
                 if (config.GetValue(KEY_REF_VALUE_PROXY))
