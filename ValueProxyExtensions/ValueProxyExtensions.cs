@@ -29,11 +29,11 @@ namespace ValueProxyExtensions
         public static ModConfigurationKey<bool> KEY_CREATE_INPUTS = new("create_inputs", "Determines whether pressing secondary with a value proxy in hand will create a ProtoFlux input with that value.", () => true);
         [AutoRegisterConfigKey]
         public static ModConfigurationKey<bool> KEY_CLICK_VALUES = new("click_values", "Determines whether pressing primary while hovering over a text field while holding a value proxy will put the held value into that field.", () => true);
+        [AutoRegisterConfigKey]
+        public static ModConfigurationKey<bool> KEY_INSPECTOR_BUTTONS = new("inspector_buttons", "Determines whether inspector panels should generate the pick value button", () => true);
         // future update ? 
         //[AutoRegisterConfigKey]
         //public static ModConfigurationKey<bool> KEY_VALUE_EXTRAS = new("value_extras", "Determines whether value proxies should generate extra visuals sometimes (showing the color of colors).", () => true);
-        [AutoRegisterConfigKey]
-        public static ModConfigurationKey<bool> KEY_INSPECTOR_BUTTONS = new("inspector_buttons", "Determines whether inspector panels should generate the pick value button", () => true);
 
         public static ModConfiguration config;
 
@@ -111,26 +111,35 @@ namespace ValueProxyExtensions
         {
             public static bool Prefix(Slot source, ref Grabber __result)
             {
-                if (!config.GetValue(KEY_PROXY_TRANSFER)) return true;
-
+                // Receive Order: same hand > opposite hand > same hand userspace > opposite hand userspace
                 var root = source.ActiveUserRoot;
+                if (root == null) return true;
+
+                // Find grabber corresponding to the hand the user clicked with
                 Grabber grabber = root.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value != BodyNode.NONE && source.IsChildOf(gr.Slot.Parent.Parent));
                 if (grabber == null) return true;
+
                 Chirality side = grabber.CorrespondingBodyNode.Value.GetChirality();
-                World other = source.World.IsUserspace() ? source.Engine.WorldManager.FocusedWorld : Userspace.UserspaceWorld;
-                var otherRoot = other.LocalUser.Root;
-                if (side >= 0)
+                Chirality otherSide = side.GetOther();
+
+                // If we haven't found a grabber with proxies yet, try finding opposite hand grabber
+                if (!grabber.HasProxy()) grabber = root.Slot.FindSidedGrabberWithProxy(otherSide);
+
+                // If we haven't found a grabber with proxies yet, try finding grabbers in userspace
+                if (grabber == null && side >= 0 && config.GetValue(KEY_PROXY_TRANSFER))
                 {
-                    var newGrabber = otherRoot.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value.GetChirality() == side);
-                    if (newGrabber.GetValueProxy<string>() != null || newGrabber.GetReferenceProxy() != null) grabber = newGrabber;
-                    else if (grabber.GetValueProxy<string>() == null && grabber.GetReferenceProxy() == null) grabber = root.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value.GetChirality() == side.GetOther());
+                    World other = source.World.IsUserspace() ? source.Engine.WorldManager.FocusedWorld : Userspace.UserspaceWorld;
+                    var otherRoot = other.LocalUser.Root;
+
+                    grabber = otherRoot.Slot.FindSidedGrabberWithProxy(side);
+                    if(grabber == null) grabber = otherRoot.Slot.FindSidedGrabberWithProxy(otherSide);
                 }
+
                 if (grabber != null)
                 {
                     __result = grabber;
                     return false;
                 }
-                Debug("Using fallback original grabber detection.");
                 return true;
             }
         }
@@ -165,24 +174,15 @@ namespace ValueProxyExtensions
                     }
                     var node = __instance.SpawnNode(defaultInput, (node) =>
                     {
-                        if(refProx != null)
+                        if (refProx != null)
                         {
                             Traverse.Create(node).Field("Target")?.Property("Target")?.SetValue(refProx.Reference.Target);
                         }
-                        if(valProx != null)
+                        if (valProx != null)
                         {
                             Traverse.Create(node).Field("Value")?.Property("Value")?.SetValue(valProx.BoxedValue);
                         }
                     });
-                    /*
-                    I don't think you can have a ValueProxy<Type> right now.
-                    if (node is TypeObjectInput t)
-                    {
-                        var t = (AccessTools.Field(typeof(TypeObjectInput), "_value").GetValue(node) as SyncType);
-                        t.Value = TypeHelper.FindType(proxType.Value.Value);
-                        node.GenerateVisual();
-                        return false;
-                    }*/
                     return false;
                 }
 
