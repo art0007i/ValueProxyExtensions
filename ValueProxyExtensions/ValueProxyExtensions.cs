@@ -56,15 +56,17 @@ namespace ValueProxyExtensions
                     type == typeof(string) ||
                     type == typeof(Uri) ||
                     type == typeof(Type) ||
-                    type == typeof(decimal) ||
-                    type == typeof(color) ||
-                    type == typeof(colorX)
+                    type == typeof(decimal)
                 )
                 {
                     return;
                 }
                 if (type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Length > 0)
                 {
+                    if(type == typeof(colorX))
+                    {
+                        ui.NestOut();
+                    }
                     GrabButtonMethod.MakeGenericMethod(type).Invoke(null, new object[] { field, type, ui, path });
                 }
             }
@@ -111,7 +113,8 @@ namespace ValueProxyExtensions
         {
             public static bool Prefix(Slot source, ref Grabber __result)
             {
-                // Receive Order: same hand > opposite hand > same hand userspace > opposite hand userspace
+                // Receive Order: same hand > same hand userspace > opposite hand > opposite hand userspace
+
                 var root = source.ActiveUserRoot;
                 if (root == null) return true;
 
@@ -122,18 +125,20 @@ namespace ValueProxyExtensions
                 Chirality side = grabber.CorrespondingBodyNode.Value.GetChirality();
                 Chirality otherSide = side.GetOther();
 
+                if (side < 0) return true;
+
+                if (!grabber.HasProxy()) grabber = null;
+
+                World other = source.World.IsUserspace() ? source.Engine.WorldManager.FocusedWorld : Userspace.UserspaceWorld;
+                var otherRoot = other.LocalUser?.Root.Slot;
+
+                // If we haven't found a grabber with proxies yet, try finding same hand grabber in userspace
+                if (grabber == null && config.GetValue(KEY_PROXY_TRANSFER)) grabber = otherRoot.FindSidedGrabberWithProxy(side);
                 // If we haven't found a grabber with proxies yet, try finding opposite hand grabber
-                if (!grabber.HasProxy()) grabber = root.Slot.FindSidedGrabberWithProxy(otherSide);
-
-                // If we haven't found a grabber with proxies yet, try finding grabbers in userspace
-                if (grabber == null && side >= 0 && config.GetValue(KEY_PROXY_TRANSFER))
-                {
-                    World other = source.World.IsUserspace() ? source.Engine.WorldManager.FocusedWorld : Userspace.UserspaceWorld;
-                    var otherRoot = other.LocalUser.Root;
-
-                    grabber = otherRoot.Slot.FindSidedGrabberWithProxy(side);
-                    if(grabber == null) grabber = otherRoot.Slot.FindSidedGrabberWithProxy(otherSide);
-                }
+                if (grabber == null) grabber = root.Slot.FindSidedGrabberWithProxy(otherSide);
+                // If we haven't found a grabber with proxies yet, try finding same hand grabber in userspace
+                if (grabber == null && config.GetValue(KEY_PROXY_TRANSFER)) grabber = otherRoot.FindSidedGrabberWithProxy(otherSide);
+                
 
                 if (grabber != null)
                 {
