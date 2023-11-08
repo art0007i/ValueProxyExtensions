@@ -10,6 +10,10 @@ namespace ValueProxyExtensions
 {
     internal static class GrabberExtensions
     {
+        public static IValueSource GetValueProxy(this Grabber grabber)
+        {
+            return grabber.GrabbedObjects.Select((gr) => gr.Slot.GetComponent<IValueSource>()).FirstOrDefault((p) => p != null);
+        }
         public static ValueProxy<T> GetValueProxy<T>(this Grabber grabber)
         {
             return grabber.GrabbedObjects.Select((gr) => gr.Slot.GetComponent<ValueProxy<T>>()).FirstOrDefault((p) => p != null);
