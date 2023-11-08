@@ -134,8 +134,7 @@ namespace ValueProxyExtensions
                 return true;
             }
         }
-        
-        /*
+
         [HarmonyPatch(typeof(ProtoFluxTool), "OnSecondaryPress")]
         class FluxToolPatch
         {
@@ -144,72 +143,53 @@ namespace ValueProxyExtensions
                 if (!config.GetValue(KEY_CREATE_INPUTS)) return true;
 
                 var grabber = __instance.ActiveHandler.Grabber;
-                var prox = grabber.GetValueProxy<string>();
-                if (prox != null && grabber.GetReferenceProxy() == null)
+                IValueSource valProx = null;
+                ReferenceProxy refProx = grabber.GetReferenceProxy(); ;
+                Type type = null;
+                if (refProx == null)
                 {
-                    var typeField = prox.Slot.GetComponent<TypeField>();
-                    Type type = typeField?.Type.Value ?? typeof(string);
-                    if (type != null)
-                    {
-                        Type defaultInput = null;
-                        try
-                        {
-                            defaultInput = typeof(ValueInput<>).MakeGenericType(type);
-                        }
-
-                        if (defaultInput == null)
-                        {
-                            defaultInput = typeof(ValueInput<string>);
-                            type = typeof(string);
-                        }
-                        var node = ((ProtoFluxNode)((Slot)AccessTools.Method(typeof(ProtoFluxTool), "CreateNewNodeSlot").Invoke(__instance, new object[] { (defaultInput).GetNiceName() })).AttachComponent(defaultInput));
-                        if (node is TypeObjectInput)
-                        {
-                            var t = (AccessTools.Field(typeof(TypeObjectInput), "_value").GetValue(node) as SyncType);
-                            t.Value = TypeHelper.FindType(prox.Value.Value);
-                            node.GenerateVisual();
-                            return false;
-                        }
-                        try
-                        {
-                            var nodeSyncField = node.GetSyncMember(4);
-                            if (type.IsEnum)
-                            {
-                                var en = Enum.Parse(type, prox.Value.Value);
-
-                                AccessTools.Method(nodeSyncField.GetType(), "set_Value").Invoke(nodeSyncField, new object[] { en });
-                            }
-                            else
-                            {
-                                var pars = AccessTools.FirstMethod(typeof(RobustParser), (mi) => mi.GetParameters().Last().ParameterType == type.MakeByRefType());
-                                object[] parsed = new object[] { prox.Value.Value, null };
-                                if ((bool)pars.Invoke(null, parsed))
-                                {
-                                    AccessTools.Method(nodeSyncField.GetType(), "set_Value").Invoke(nodeSyncField, new object[] { parsed[1] });
-                                }
-                                else
-                                {
-                                    // this should only really happen when you do weird stuff
-                                    // such as manually editing / constructing a value proxy
-                                    Debug("epic parser failure!!!! laugh at this user");
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            Warn("an exception occured while trying to parse " + type);
-                        }
-                        finally
-                        {
-                            node.GenerateVisual();
-                        }
-                        return false;
-                    }
+                    valProx = grabber.GetValueProxy();
+                    type = valProx?.GetType().GenericTypeArguments.FirstOrDefault();
                 }
+                else
+                {
+                    type = refProx?.Reference.Target?.GetType();
+                }
+                if (type != null)
+                {
+                    Type defaultInput = ProtoFluxHelper.GetInputNode(type);
+                    if (defaultInput == null)
+                    {
+                        defaultInput = typeof(ValueObjectInput<string>);
+                        type = typeof(string);
+                    }
+                    var node = __instance.SpawnNode(defaultInput, (node) =>
+                    {
+                        if(refProx != null)
+                        {
+                            Traverse.Create(node).Field("Target")?.Property("Target")?.SetValue(refProx.Reference.Target);
+                        }
+                        if(valProx != null)
+                        {
+                            Traverse.Create(node).Field("Value")?.Property("Value")?.SetValue(valProx.BoxedValue);
+                        }
+                    });
+                    /*
+                    I don't think you can have a ValueProxy<Type> right now.
+                    if (node is TypeObjectInput t)
+                    {
+                        var t = (AccessTools.Field(typeof(TypeObjectInput), "_value").GetValue(node) as SyncType);
+                        t.Value = TypeHelper.FindType(proxType.Value.Value);
+                        node.GenerateVisual();
+                        return false;
+                    }*/
+                    return false;
+                }
+
                 return true;
             }
-        }*/
-        
+        }
+
 
         [HarmonyPatch(typeof(ReferenceProxy), "Construct")]
         class ReferenceProxyExtensiomsPatch
