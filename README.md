@@ -4,12 +4,9 @@ A [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoade
 All features can be individually disabled using the config system.
 - Reference Proxies now display the type they are storing, and also act as a value proxy with the full type name (useful for dropping into the component attacher generic type selector)
 - Value Proxies can be clicked into a field similar to reference proxies
-- ~~Pressing secondary with a flux tip while holding a value proxy will create an input with that value~~
-- ~~LogiX displays allow grabbing their contained value with an extra generated button~~
+- Pressing secondary with a flux tip while holding a value or reference proxy will create an input with that value
 - Inspector panels will generate buttons that allow grabbing and dropping types such as float3, floatQ, enums etc.
 - Value Proxies can be transferred between world and userspace by using the click in feature
-
-Due to porting difficulties the crossed out features are currently unavailable.
 
 ## Installation
 1. Install [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader).
