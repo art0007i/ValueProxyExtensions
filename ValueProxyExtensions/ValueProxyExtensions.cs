@@ -46,7 +46,10 @@ namespace ValueProxyExtensions
             Harmony harmony = new Harmony("me.art0007i.ValueProxyExtensions");
             harmony.PatchAll();
 
-            /*foreach (var display in Constants.displays)
+            /*
+             * REDUNDANT WITH VALUE PROXY UPDATE!
+             * 
+             * foreach (var display in Constants.displays)
             {
                 var visual = AccessTools.Method(display, "OnGenerateVisual");
                 var changes = AccessTools.Method(display, "OnChanges");
@@ -72,9 +75,10 @@ namespace ValueProxyExtensions
             }*/
         }
 
-        
+        /*
+         * REDUNDANT WITH VALUE PROXY UPDATE
         class DisplayPatch
-        {/*
+        {
             public static void Postfix(Slot root, ProtoFluxNode __instance)
             {
                 if (!config.GetValue(KEY_LOGIX_DISPLAYS)) return;
@@ -179,8 +183,8 @@ namespace ValueProxyExtensions
                 var funnyStrs = displayTexts[__instance.GetType()].ConvertAll((fi) => (fi.GetValue(__instance) as FieldDrive<string>).Target?.Value.Substring(3));
                 txt.Value = "[" + string.Join("; ", funnyStrs) + "]";
             }
+    }
             */
-        }
         [HarmonyPatch(typeof(SyncMemberEditorBuilder))]
         class InspectorFieldPatch
         {
@@ -195,10 +199,7 @@ namespace ValueProxyExtensions
                     type == typeof(Type) ||
                     type == typeof(decimal) ||
                     type == typeof(color) ||
-                    type == typeof(colorX) ||
-                    type == typeof(BoundingBox) || 
-                    type == typeof(Rect) || // This one could be parseable but im too lazy to add it lol
-                    type.IsNullable()
+                    type == typeof(colorX)
                 )
                 {
                     return;
@@ -206,17 +207,31 @@ namespace ValueProxyExtensions
                 if (type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Length > 0)
                 {
                     // Could maybe disable value picker button if nullable is false but 2 lazy for that lol
-                    BuildGrabButton(field, ui, path);
+                    GrabButtonMethod.MakeGenericMethod(type).Invoke(null, new object[] { field, type, ui, path });
                 }
             }
 
-            public static void BuildGrabButton(IField field, UIBuilder ui, string path = null)
+            public static MethodInfo GrabButtonMethod = AccessTools.Method(typeof(InspectorFieldPatch), nameof(BuildGrabButton));
+
+            public static void BuildGrabButton<T>(IField field, Type type, UIBuilder ui, string path = null)
             {
+                //Debug($"ptlen: {path?.Length} Generating field " + field.Name + " with type: " + type.ToString());
+                // Inner fields, for example Rect.position and Rect.size
+                if (!string.IsNullOrEmpty(path)) return;
+
                 ui.PushStyle();
                 ui.Style.MinWidth = 24;
                 ui.Style.ButtonColor = new colorX(0.7f, 0.7f, 1);
                 var bt = ui.Button(Constants.grabIcon);
-                bt.ColorDrivers.Do((cd)=> cd.PressColor.Value = cd.HighlightColor.Value);
+                bt.ColorDrivers.Do((cd) => cd.PressColor.Value = cd.HighlightColor.Value);
+
+                bt.Slot.AttachComponent<ValueProxySource<T>>().Value.DriveFrom(field);
+
+                // this could throw sometimes maybe?
+                bt.Slot.AttachComponent<ValueReceiver<T>>().Field.Target = (IField<T>)field;
+
+                /*
+                 * REDUNDANT WITH VALUE PROXY UPDATE!
                 var text = bt.Slot.AttachComponent<Text>();
                 var textField = bt.Slot.AttachComponent<TextField>();
                 var primEditor = bt.Slot.AttachComponent<PrimitiveMemberEditor>();
@@ -228,10 +243,13 @@ namespace ValueProxyExtensions
                 textField.Editor.Target.Text.Target = text;
                 textField.Enabled = false;
                 text.Enabled = false;
+                */
                 ui.PopStyle();
             }
         }
 
+        /*
+         * REDUNDANT WITH VALUE PROXY UPDATE!
         [HarmonyPatch(typeof(TextField))]
         class ValueProxyExtensionsPatch
         {
@@ -274,6 +292,7 @@ namespace ValueProxyExtensions
                 }
             }
         }
+        */
         [HarmonyPatch(typeof(TextField), "FrooxEngine.IButtonPressReceiver.Pressed")]
         class TextFieldPatch
         {
@@ -306,7 +325,7 @@ namespace ValueProxyExtensions
                 {
                     var newGrabber = otherRoot.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value.GetChirality() == side);
                     if (newGrabber.GetValueProxy<string>() != null || newGrabber.GetReferenceProxy() != null) grabber = newGrabber;
-                    else if(grabber.GetValueProxy<string>() == null && grabber.GetReferenceProxy() == null) grabber = root.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value.GetChirality() == side.GetOther());
+                    else if (grabber.GetValueProxy<string>() == null && grabber.GetReferenceProxy() == null) grabber = root.Slot.GetComponentInChildren<Grabber>((gr) => gr.CorrespondingBodyNode.Value.GetChirality() == side.GetOther());
                 }
                 if (grabber != null)
                 {
@@ -392,6 +411,9 @@ namespace ValueProxyExtensions
             }
         }
         */
+
+        /*
+         * REDUNDANT WITH VALUE PROXY UPDATE
         [HarmonyPatch(typeof(PrimitiveTryParsers), "GetParser", new Type[] { typeof(Type) })]
         class ParserExtensions
         {
@@ -421,7 +443,8 @@ namespace ValueProxyExtensions
                 }
                 return null;
             }
-        }
+        }*/
+
         [HarmonyPatch(typeof(ReferenceProxy), "Construct")]
         class ReferenceProxyExtensiomsPatch
         {
@@ -432,7 +455,7 @@ namespace ValueProxyExtensions
                     __result.Slot.GetComponentInChildren<Canvas>().Size.Value = new(0, 32);
                     __result.Slot.GetComponentInChildren<Text>().Content.Value += "\n" + target.GetType().GetNiceName();
                 }
-                
+
                 if (config.GetValue(KEY_REF_VALUE_PROXY))
                 {
                     __result.Slot.AttachComponent<ValueProxy<string>>().Value.Value = target.GetType().FullName;
