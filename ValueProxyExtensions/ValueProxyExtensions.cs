@@ -16,7 +16,7 @@ namespace ValueProxyExtensions
     {
         public override string Name => "ValueProxyExtensions";
         public override string Author => "art0007i";
-        public override string Version => "2.1.0";
+        public override string Version => "2.1.1";
         public override string Link => "https://github.com/art0007i/ValueProxyExtensions/";
 
         [AutoRegisterConfigKey]
@@ -26,7 +26,7 @@ namespace ValueProxyExtensions
         [AutoRegisterConfigKey]
         public static ModConfigurationKey<bool> KEY_PROXY_TRANSFER = new("proxy_transfer", "Determines whether value proxies should be allowed to be transported to userspace and back.", () => true);
         [AutoRegisterConfigKey]
-        public static ModConfigurationKey<bool> KEY_CREATE_INPUTS = new("create_inputs", "Determines whether pressing secondary with a value proxy in hand will create a ProtoFlux input with that value.", () => true);
+        public static ModConfigurationKey<bool> KEY_CREATE_INPUTS = new("create_inputs", "Determines whether pressing secondary with a value or reference proxy in hand will create a ProtoFlux input with that value.", () => true);
         [AutoRegisterConfigKey]
         public static ModConfigurationKey<bool> KEY_CLICK_VALUES = new("click_values", "Determines whether pressing primary while hovering over a text field while holding a value proxy will put the held value into that field.", () => true);
         [AutoRegisterConfigKey]
