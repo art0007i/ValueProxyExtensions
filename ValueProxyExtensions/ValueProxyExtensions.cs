@@ -16,7 +16,7 @@ namespace ValueProxyExtensions
     {
         public override string Name => "ValueProxyExtensions";
         public override string Author => "art0007i";
-        public override string Version => "2.1.1";
+        public override string Version => "2.1.2";
         public override string Link => "https://github.com/art0007i/ValueProxyExtensions/";
 
         [AutoRegisterConfigKey]
@@ -63,10 +63,6 @@ namespace ValueProxyExtensions
                 }
                 if (type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Length > 0)
                 {
-                    if(type == typeof(colorX))
-                    {
-                        ui.NestOut();
-                    }
                     GrabButtonMethod.MakeGenericMethod(type).Invoke(null, new object[] { field, type, ui, path });
                 }
             }
