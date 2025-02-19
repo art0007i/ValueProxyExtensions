@@ -16,7 +16,7 @@ namespace ValueProxyExtensions
     {
         public override string Name => "ValueProxyExtensions";
         public override string Author => "art0007i";
-        public override string Version => "2.1.2";
+        public override string Version => "2.1.3";
         public override string Link => "https://github.com/art0007i/ValueProxyExtensions/";
 
         [AutoRegisterConfigKey]
@@ -30,7 +30,7 @@ namespace ValueProxyExtensions
         [AutoRegisterConfigKey]
         public static ModConfigurationKey<bool> KEY_CLICK_VALUES = new("click_values", "Determines whether pressing primary while hovering over a text field while holding a value proxy will put the held value into that field.", () => true);
         [AutoRegisterConfigKey]
-        public static ModConfigurationKey<bool> KEY_INSPECTOR_BUTTONS = new("inspector_buttons", "Determines whether inspector panels should generate the pick value button", () => true);
+        public static ModConfigurationKey<bool> KEY_INSPECTOR_BUTTONS = new("inspector_buttons", "Determines whether inspector panels should generate the pick value button.", () => false);
         // future update ? 
         //[AutoRegisterConfigKey]
         //public static ModConfigurationKey<bool> KEY_VALUE_EXTRAS = new("value_extras", "Determines whether value proxies should generate extra visuals sometimes (showing the color of colors).", () => true);
