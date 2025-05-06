@@ -14,9 +14,10 @@ namespace ValueProxyExtensions
 {
     public class ValueProxyExtensions : ResoniteMod
     {
+        public const string VERSION = "2.1.4";
         public override string Name => "ValueProxyExtensions";
         public override string Author => "art0007i";
-        public override string Version => "2.1.3";
+        public override string Version => VERSION;
         public override string Link => "https://github.com/art0007i/ValueProxyExtensions/";
 
         [AutoRegisterConfigKey]
@@ -152,7 +153,10 @@ namespace ValueProxyExtensions
             {
                 if (!config.GetValue(KEY_CREATE_INPUTS)) return true;
 
-                var grabber = __instance.ActiveHandler.Grabber;
+                var grabber = __instance.ActiveHandler?.Grabber;
+
+                if (grabber == null) return true;
+
                 IValueSource valProx = null;
                 ReferenceProxy refProx = grabber.GetReferenceProxy(); ;
                 Type type = null;
