@@ -14,6 +14,7 @@
     <GamePath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Resonite\')">C:\Program Files (x86)\Steam\steamapps\common\Resonite\</GamePath>
     <GamePath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/Resonite/')">$(HOME)/.steam/steam/steamapps/common/Resonite/</GamePath>
 	<GamePath Condition="Exists('E:\Programs\Steam\steamapps\common\Resonite')">E:\Programs\Steam\steamapps\common\Resonite\</GamePath>
+		<GameLibs>$(GamePath)</GameLibs>
     <CopyLocal>false</CopyLocal>
     <CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
     <DebugSymbols Condition="'$(Configuration)'=='Release'">false</DebugSymbols>
@@ -26,29 +27,32 @@
       <HintPath Condition="Exists('$(GamePath)0Harmony.dll')">$(GamePath)0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Elements.Core">
-      <HintPath>$(GamePath)Resonite_Data\Managed\Elements.Core.dll</HintPath>
+      <HintPath>$(GameLibs)Elements.Core.dll</HintPath>
     </Reference>
 	<Reference Include="ProtoFlux.Nodes.Core">
-      <HintPath>$(GamePath)Resonite_Data\Managed\ProtoFlux.Nodes.Core.dll</HintPath>
+      <HintPath>$(GameLibs)ProtoFlux.Nodes.Core.dll</HintPath>
     </Reference>
 	<Reference Include="ProtoFlux.Core">
-      <HintPath>$(GamePath)Resonite_Data\Managed\ProtoFlux.Core.dll</HintPath>
+      <HintPath>$(GameLibs)ProtoFlux.Core.dll</HintPath>
     </Reference>
 	<Reference Include="ProtoFlux.Nodes.FrooxEngine">
-      <HintPath>$(GamePath)Resonite_Data\Managed\ProtoFlux.Nodes.FrooxEngine.dll</HintPath>
+      <HintPath>$(GameLibs)ProtoFlux.Nodes.FrooxEngine.dll</HintPath>
     </Reference>
 	<Reference Include="ProtoFluxBindings">
-      <HintPath>$(GamePath)Resonite_Data\Managed\ProtoFluxBindings.dll</HintPath>
+      <HintPath>$(GameLibs)ProtoFluxBindings.dll</HintPath>
     </Reference>
-    <Reference Include="FrooxEngine">
-      <HintPath>$(GamePath)Resonite_Data\Managed\FrooxEngine.dll</HintPath>
-    </Reference>
+		<Reference Include="FrooxEngine">
+			<HintPath>$(GameLibs)FrooxEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="Renderite.Shared">
+			<HintPath>$(GameLibs)Renderite.Shared.dll</HintPath>
+		</Reference>
     <Reference Include="ResoniteModLoader">
       <HintPath>$(GamePath)ResoniteModLoader.dll</HintPath>
       <HintPath>$(GamePath)Libraries\ResoniteModLoader.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>$(GamePath)Resonite_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(GameLibs)Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
 

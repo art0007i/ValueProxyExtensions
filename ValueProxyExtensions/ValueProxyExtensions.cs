@@ -9,12 +9,13 @@ using FrooxEngine.ProtoFlux;
 using FrooxEngine.UIX;
 using Elements.Core;
 using FrooxEngine.ProtoFlux.Runtimes.Execution.Nodes;
+using Renderite.Shared;
 
 namespace ValueProxyExtensions
 {
     public class ValueProxyExtensions : ResoniteMod
     {
-        public const string VERSION = "2.1.4";
+        public const string VERSION = "2.1.5";
         public override string Name => "ValueProxyExtensions";
         public override string Author => "art0007i";
         public override string Version => VERSION;
